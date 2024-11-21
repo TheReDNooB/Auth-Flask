@@ -29,7 +29,7 @@ def index():
         return redirect(url_for("dashboard"))
     return render_template("index.html")
 
-#Login
+# Login
 @app.route("/login", methods=["POST"])
 def login():
     # collect the info from the form
@@ -42,7 +42,7 @@ def login():
     else:
         return render_template("index.html")
 
-#Register
+# Register
 @app.route("/register", methods=["POST"])
 def register():
     username = request.form['username']
@@ -59,11 +59,17 @@ def register():
         return redirect(url_for("dashboard"))
 
 
-#Dashboard
+# Dashboard
 @app.route("/dashboard")
 def dashboard():
     if "username" in session:
         return render_template("dashboard.html", username=session['username'])
+    return redirect(url_for('index'))
+
+# Logout
+@app.route("/logout")
+def logout():
+    session.pop('usaername', None)
     return redirect(url_for('index'))
 
 if __name__ in "__main__":
