@@ -14,7 +14,7 @@ db = SQLAlchemy(app)
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(25), unique=True, nullable=False)
-    password = db.Column(db.String(150), nullable=False)
+    password_hash = db.Column(db.String(150), nullable=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -28,6 +28,43 @@ def index():
     if "username" == session:
         return redirect(url_for("dashboard"))
     return render_template("index.html")
+
+#Login
+@app.route("/login", methods=["POST"])
+def login():
+    # collect the info from the form
+    username = request.form['username']
+    password = request.form['password']
+    user = User.query.filter_by(username=username).first()
+    if user and user.check_password(password):
+        session['username'] = username
+        return redirect(url_for("dashboard"))
+    else:
+        return render_template("index.html")
+
+#Register
+@app.route("/register", methods=["POST"])
+def register():
+    username = request.form['username']
+    password = request.form['password']
+    user = User.query.filter_by(username=username).first()
+    if user:
+        return render_template("index.html", error="User already here")
+    else:
+        new_user = User(username=username)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
+        session["username"] = username
+        return redirect(url_for("dashboard"))
+
+
+#Dashboard
+@app.route("/dashboard")
+def dashboard():
+    if "username" in session:
+        return render_template("dashboard.html", username=session['username'])
+    return redirect(url_for('index'))
 
 if __name__ in "__main__":
     with app.app_context():
